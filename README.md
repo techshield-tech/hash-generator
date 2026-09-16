@@ -7,6 +7,7 @@ sent over the network.
 **Live:** https://techshield-tech.github.io/hash-generator/
 
 Part of [MMOALL Developer Tools](https://mmoall.com/tools).
+Also available at [mmoall.com/tools/hash-generator](https://mmoall.com/tools/hash-generator).
 
 ## Features
 
@@ -30,25 +31,27 @@ Part of [MMOALL Developer Tools](https://mmoall.com/tools).
 - [Vite 6](https://vite.dev/) + [React 19](https://react.dev/) + TypeScript
 - [Tailwind CSS 4](https://tailwindcss.com/) (via `@tailwindcss/vite`)
 - [Bun](https://bun.sh/) as package manager / script runner
-- No runtime dependencies besides React
+- [@noble/hashes](https://github.com/paulmillr/noble-hashes) for hashing/HMAC primitives, and
+  [`@mmoall/tool-kit`](https://github.com/techshield-tech/tool-kit) for the shared app shell —
+  not just React at runtime
 
 ## Project structure
 
 ```
 src/
-├── main.tsx              # Entry point
-├── index.css             # Tailwind + theme tokens (light/dark)
+├── main.tsx              # Entry point — mounts `Tool` inside `AppShell` from @mmoall/tool-kit
+├── index.css             # Tailwind entry; theme tokens come from @mmoall/tool-kit/theme.css
 ├── tool.config.ts        # Tool metadata: slug, name, description, category
-├── shell/                # Shared MMOALL tool shell (same across tool repos)
-│   ├── AppShell.tsx      # Header/footer, theme handling, embed mode
-│   ├── embed.ts          # iframe embed contract (postMessage)
-│   └── ui.tsx            # UI primitives and icons
-└── tool/                 # JSON-formatter–specific code
+├── vite-env.d.ts         # Vite client types
+└── tool/                 # Hash-generator–specific code
     ├── Tool.tsx          # The tool UI
-    ├── json-transform.ts # formatJson / minifyJson / sort keys
-    ├── json-error.ts     # SyntaxError → line/column
-    └── sample.ts         # Sample JSON
+    ├── hashing.ts        # Hashing/HMAC helpers built on @noble/hashes
+    └── local-ui.tsx      # UI primitives specific to this tool
 ```
+
+The shared app shell, theme, embed handling, and SEO code (previously a local `src/shell/`
+directory in this repo) now come from the `@mmoall/tool-kit` npm package
+(`github:techshield-tech/tool-kit#v0.2.0`, see `package.json`), not from local files.
 
 ## Running locally
 
@@ -82,7 +85,8 @@ With npm: `npm install`, `npm run dev`, `npm run build`, `npm run preview`.
 
 ### Base path
 
-The asset base URL is chosen at build time in `vite.config.ts`:
+The asset base URL is chosen at build time by the `mmoallTool()` preset from
+`@mmoall/tool-kit/vite`, which this repo's `vite.config.ts` calls:
 
 | Condition               | `base`             | Used for                    |
 | ----------------------- | ------------------ | --------------------------- |
